@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from database import database
 from telegram import telegramBot
 from esp8266 import light
@@ -10,9 +11,15 @@ config = SafeConfigParser()
 config.read('config.ini')
 
 
-def keyboard():
-    keys = [[{'text': 'ON', 'callback_data': '{"value":True}'}],
-            [{'text': 'OFF', 'callback_data': '{"value":False}'}]]
+def keyboard(status=None):
+    on = 'ON    ⚪'
+    off = 'OFF  ⚪'
+    if(status == True):
+        on = 'ON    🔵'
+    if(status == False):
+        off = 'OFF  🔵'
+    keys = [[{'text': on, 'callback_data': '{"value":True}'}],
+            [{'text': off, 'callback_data': '{"value":False}'}]]
     return json.dumps({'inline_keyboard': keys})
 
 
@@ -53,12 +60,17 @@ def main():
                                 id, "Bienvenido al *IoT_Osite_0.0*", teclado)
                     if('callback_query' in update):
                         id = update['callback_query']['message']['chat']['id']
+                        msg_id = update['callback_query'][
+                            'message']['message_id']
                         data = ast.literal_eval(
                             update['callback_query']['data'])
                         if(data['value']):
                             turnOn(esp)
                         else:
                             turnOff(esp)
+                        teclado = keyboard(data['value'])
+                        bot.editMessage(
+                            id, msg_id, "Bienvenido al *IoT_Osite_0.0*", teclado)
 
     else:
         print("Error al conectar a la base de datos")
