@@ -42,11 +42,7 @@ class database:
 
 
 def main():
-    db = database('localhost', 6379)
-    db.connect()
-    if(db.status()):
-        # a=db.getLight()
-        print a
+    print("main")
 
 if __name__ == "__main__":
     main()

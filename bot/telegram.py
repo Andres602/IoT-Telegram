@@ -71,7 +71,7 @@ def main():
     #mybot = telegramBot("")
     #updates = mybot.getUpdates()
     # mybot.send_message(,"<b>hola</b>")
-    # print(updates)
+    print("main")
 
 if __name__ == "__main__":
     main()
