@@ -4,6 +4,7 @@ from esp8266 import light
 import json
 import ast
 from ConfigParser import SafeConfigParser
+import requests.packages.urllib3
 
 config = SafeConfigParser()
 config.read('config.ini')
@@ -26,6 +27,7 @@ def turnOff(esp):
 
 
 def main():
+    requests.packages.urllib3.disable_warnings()
     bot = telegramBot(config.get('bot', 'token'))
     esp = light(config.get('esp8266', 'host'))
     db = database(config.get('database', 'host'),

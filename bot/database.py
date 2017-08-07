@@ -1,49 +1,51 @@
 import redis
 
+
 class database:
 
     def __init__(self, host, port):
-       self.host=host
-       self.port=port
+        self.host = host
+        self.port = port
 
     def connect(self):
         self.r = redis.StrictRedis(host=self.host, port=self.port, db=0)
 
     def newUser(self, id):
-        return self.r.hset('user:'+str(id),"light:01","off")
+        return self.r.hset('user:' + str(id), "light:01", "off")
 
     def getLight(self, id):
-        return self.r.hget('user:'+str(id),"light:01")
+        return self.r.hget('user:' + str(id), "light:01")
 
     def getAll(self, id):
-        return self.r.hgetall('user:'+str(id))
+        return self.r.hgetall('user:' + str(id))
 
     def turnOn(self, id):
-        return self.r.hset('user:'+str(id),"light:01","off")
+        return self.r.hset('user:' + str(id), "light:01", "off")
 
     def turnOff(self, id):
-        return self.r.hset('user:'+str(id),"light:01","off")
+        return self.r.hset('user:' + str(id), "light:01", "off")
 
     def getUpdate(self):
-        return self.r.hget('bot:lightControl',"updateId")
+        return self.r.hget('bot:lightControl', "updateId")
 
     def setUpdate(self, id):
-        return self.r.hset('bot:lightControl',"updateId",id)
+        return self.r.hset('bot:lightControl', "updateId", id)
 
     def status(self):
         try:
-            a=self.r.ping()
+            a = self.r.ping()
             if(a):
                 return True
             return False
         except:
             return False
 
+
 def main():
     db = database('localhost', 6379)
     db.connect()
     if(db.status()):
-        a=db.getLight(5951788)
+        # a=db.getLight()
         print a
 
 if __name__ == "__main__":

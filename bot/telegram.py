@@ -68,10 +68,10 @@ class telegramBot:
 
 
 def main():
-    mybot = telegramBot("264631921:AAGm9wkqjv8_E8NRHfSH_i3_o_pNL7YTyOk")
-    updates = mybot.getUpdates()
-    # mybot.send_message(5951788,"<b>hola</b>")
-    print(updates)
+    #mybot = telegramBot("")
+    #updates = mybot.getUpdates()
+    # mybot.send_message(,"<b>hola</b>")
+    # print(updates)
 
 if __name__ == "__main__":
     main()
