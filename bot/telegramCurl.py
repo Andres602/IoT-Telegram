@@ -1,38 +1,44 @@
-import requests
+# -*- coding: utf-8 -*-
+import pycurl
+import json
+from StringIO import StringIO
+from urllib import urlencode
 
 
 class telegramBot:
 
     def __init__(self, token):
         self.url = "https://api.telegram.org/bot" + token + "/"
+        self.c = pycurl.Curl()
+
+    def close(self):
+        self.c.close()
 
     def buildUrl(self, method, options=None):
-        post = {
-            'url': self.url + method,
-            'json': options
-        }
-        return post
+        storage = StringIO()
+        self.c.setopt(self.c.URL,  self.url + method)
+        if(options != None):
+            postfields = urlencode(options)
+            self.c.setopt(self.c.POSTFIELDS, postfields)
+        self.c.setopt(self.c.WRITEFUNCTION, storage.write)
+        self.c.perform()
+        content = storage.getvalue()
+        return json.loads(content)
 
     def getUpdates(self, offset=False):
         post = None
-        r=None
         if(offset):
             post = self.buildUrl("getUpdates", {'offset': offset})
         else:
             post = self.buildUrl("getUpdates")
-   	if(post['json']==None):
-	    r=requests.post(post['url'])
-        else:
-            r = requests.post(post['url'], json=post['json'])
-        return r.json()
+        return post
 
     def sendMessage(self, id, text, replymarkup=False):
         message = {"chat_id": id, "text": text, "parse_mode": "Markdown"}
         if(replymarkup):
             message['reply_markup'] = replymarkup
         post = self.buildUrl("sendMessage", message)
-        r = requests.post(post['url'], json=post['json'])
-        return r.json()
+        return post
 
     def replyTo(self, m, text):
         message = {
@@ -42,8 +48,7 @@ class telegramBot:
             "reply_to_message_id": m['message_id']
         }
         post = self.buildUrl('sendMessage', message)
-        r = requests.post(post['url'], json=post['json'])
-        return r.json()
+        return post
 
     def editMessage(self, id, msg_id, text, replymarkup=False):
         message = {
@@ -55,8 +60,7 @@ class telegramBot:
         if(replymarkup):
             message['reply_markup'] = replymarkup
         post = self.buildUrl('editMessageText', message)
-        r = requests.post(post['url'], json=post['json'])
-        return r.json()
+        return post
 
     def ansCBQuery(self, id, text, alert=False):
         message = {
@@ -67,12 +71,15 @@ class telegramBot:
         if(alert):
             message['show_alert'] = alert
         post = self.buildUrl('answerCallbackQuery', message)
-        r = requests.post(post['url'], json=post['json'])
-        return r.json()
+        return post
 
 
 def main():
-    print("main")
+    bot = telegramBot('306060926:AAFYOStDUfL1PQ2wtvV16isS-ER8tDr8BHE')
+    bot.getUpdates()
+    bot.sendMessage(5951788, "hola _Mundo_")
+    bot.close()
 
 if __name__ == "__main__":
     main()
+

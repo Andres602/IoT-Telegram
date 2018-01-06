@@ -7,7 +7,13 @@ class light:
         self.host = host
 
     def turnOn(self):
-        requests.get(self.host + "/gpio/1")
+        try:
+            requests.get(self.host + "/gpio/1")
+        except:
+            pass
 
     def turnOff(self):
-        requests.get(self.host + "/gpio/0")
+        try:
+            requests.get(self.host + "/gpio/0")
+        except:
+            pass
