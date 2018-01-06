@@ -10,17 +10,20 @@ class light:
         self.c = pycurl.Curl()
         self.host = host
 
+    def requests(self,url):
+        try:
+            storage = StringIO()
+            self.c.setopt(self.c.URL,  self.host + url)
+            self.c.setopt(self.c.WRITEFUNCTION, storage.write)
+            self.c.perform()
+        except:
+            pass
+
     def turnOn(self):
-        storage = StringIO()
-        self.c.setopt(self.c.URL,  self.host + "/gpio/1")
-        self.c.setopt(self.c.WRITEFUNCTION, storage.write)
-        self.c.perform()
-        #requests.get(self.host + "/gpio/1")
+        self.requests("/gpio/1")
 
     def turnOff(self):
-        storage = StringIO()
-        self.c.setopt(self.c.URL,  self.host + "/gpio/0")
-        self.c.setopt(self.c.WRITEFUNCTION, storage.write)
-        self.c.perform()
-        #requests.get(self.host + "/gpio/0")
+        self.requests("/gpio/0")
+
+    
 
