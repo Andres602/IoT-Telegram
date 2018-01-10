@@ -26,8 +26,8 @@ little specif changes*/
 // D9 = 3;
 // D10 = 1;
 
-const char *ssid = "IzzI Castro";
-const char *password = "1123581321";
+const char *ssid = "ssid_name";
+const char *password = "ssid_password";
 const int pin = 2;
 
 // Create an instance of the server
