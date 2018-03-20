@@ -2,11 +2,11 @@
 # -*- coding: utf-8 -*-
 from database import database
 from telegramCurl import telegramBot
-from esp8266Curl import light
 import json
 import ast
 from ConfigParser import SafeConfigParser
 import requests.packages.urllib3
+import time
 
 config = SafeConfigParser()
 config.read('/home/orangepi/IoT-Telegram/bot/config.ini')
@@ -24,21 +24,23 @@ def keyboard(status=None):
     return json.dumps({'inline_keyboard': keys})
 
 
-def turnOn(esp):
-    esp.turnOn()
+def turnOn(db,id):
     print ("turnOn")
+    return db.turnOn(id)
 
 
-def turnOff(esp):
-    esp.turnOff()
-    print ("turnOff")
+
+def turnOff(db,id):
+    print("turnOff")
+    return db.turnOff(id)
 
 
 def main():
     updateId = False
     requests.packages.urllib3.disable_warnings()
     bot = telegramBot(config.get('bot', 'token'))
-    esp = light(config.get('esp8266', 'host'))
+    db=database(config.get('database','host'), config.get('database','port'))
+    db.connect()
     print("Bot iniciado")
     while (1):
         updates = bot.getUpdates(updateId)
@@ -60,17 +62,15 @@ def main():
                     data = ast.literal_eval(
                         update['callback_query']['data'])
                     if(data['value']):
-                        turnOn(esp)
+                        turnOn(db,id)
                     else:
-                        turnOff(esp)
+                        turnOff(db,id)
                     teclado = keyboard(data['value'])
                     bot.editMessage(
-                        id, msg_id, "Bienvenido al *IoT_Osite_0.0*", teclado)
+                        id, msg_id, "Welcome to *IoT_Osite_1.0*", teclado)
+        time.sleep(1)
 
-    # else:
-    #    print("Error al conectar a la base de datos")
-    #    return 0
-
+    
 
 if __name__ == "__main__":
     main()

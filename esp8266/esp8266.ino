@@ -1,117 +1,83 @@
-/*
- *  This sketch demonstrates how to set up a simple HTTP-like server.
- *  The server will set a GPIO pin depending on the request
- *    http://server_ip/gpio/0 will set the GPIO2 low,
- *    http://server_ip/gpio/1 will set the GPIO2 high
- *  server_ip is the IP address of the ESP8266 module, will be
- *  printed to Serial when the module is connected.
- */
-
-/*This cod came with the esp8266 arduino examples We just modify some parameters
-an add
-little specif changes*/
+#include <Arduino.h>
 
 #include <ESP8266WiFi.h>
-#include <string.h>
+#include <ESP8266WiFiMulti.h>
 
-// D0 = 16;
-// D1 = 5;
-// D2 = 4;
-// D3 = 0;
-// D4 = 2;
-// D5 = 14;
-// D6 = 12;
-// D7 = 13;
-// D8 = 15;
-// D9 = 3;
-// D10 = 1;
+#include <ESP8266HTTPClient.h>
 
-const char *ssid = "IzzI Castro";
-const char *password = "1123581321";
+#define USE_SERIAL Serial
+
+ESP8266WiFiMulti WiFiMulti;
+
+Required for LIGHT_SLEEP_T delay mode
+extern "C" {
+#include "user_interface.h"
+}
+
+const char *ssid = "SSID";
+const char *password = "PASSWORD";
+const char *token = "esp-token";
+const char *api = "api-url";
 const int pin = 2;
-
-// Create an instance of the server
-// specify the port to listen on as an argument
-WiFiServer server(80);
 
 void setup() {
 
-  pinMode(pin, OUTPUT);
-  Serial.begin(115200);
-  delay(10);
+    USE_SERIAL.begin(115200);
+   // USE_SERIAL.setDebugOutput(true);
 
-  // Connect to WiFi network
-  Serial.println();
-  Serial.println();
-  Serial.print("Connecting to ");
-  Serial.println(ssid);
+    USE_SERIAL.println();
+    USE_SERIAL.println();
+    USE_SERIAL.println();
 
-  // setting Ip of device
+    for(uint8_t t = 4; t > 0; t--) {
+        USE_SERIAL.printf("[SETUP] WAIT %d...\n", t);
+        USE_SERIAL.flush();
+        delay(1000);
+    }
 
-  WiFi.begin(ssid, password);
+    WiFi.mode(WIFI_STA);
+    WiFiMulti.addAP(ssid, password);
+    pinMode(pin, OUTPUT);
 
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-  }
-  Serial.println("");
-  Serial.println("WiFi connected");
-
-  // Start the server
-  server.begin();
-  Serial.println("Server started");
-
-  // Print the IP address
-  Serial.println(WiFi.localIP());
 }
 
 void loop() {
-  // Check if a client has connected
-  WiFiClient client = server.available();
-  if (!client) {
-    // Serial.println("Client not founded");
-    return;
-  }
+    // wait for WiFi connection
+    if((WiFiMulti.run() == WL_CONNECTED)) {
 
-  // Wait until the client sends some data
-  Serial.println("new client");
-  while (!client.available()) {
-    delay(1);
-  }
+        HTTPClient http;
 
-  // Read the first line of the request
-  String req = client.readStringUntil('/n');
-  Serial.println(req);
-  client.flush();
+        USE_SERIAL.print("[HTTP] begin...\n");
+        // configure traged server and url
+        http.begin(api); //HTTP
+        http.addHeader("token", token);
 
-  // Match the request
 
-  String pwmVal = "";
-  if (req.indexOf("/gpio/0") != -1) {
-    digitalWrite(pin, HIGH);
-    pwmVal = "OFF";
-  } else if (req.indexOf("/gpio/1") != -1) {
-    digitalWrite(pin, LOW);
-    pwmVal = "ON";
-  } else {
-    Serial.println("invalid request");
-    client.stop();
-    return;
-  }
 
-  client.flush();
+        USE_SERIAL.print("[HTTP] GET...\n");
+        // start connection and send HTTP header
+        int httpCode = http.GET();
 
-  // Prepare the response
-  String s = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<!DOCTYPE "
-             "HTML>\r\n<html>\r\nLigth value is ";
-  s += pwmVal;
-  s += "</html>\n";
+        // httpCode will be negative on error
+        if(httpCode > 0) {
+            // HTTP header has been send and Server response header has been handled
+            USE_SERIAL.printf("[HTTP] GET... code: %d\n", httpCode);
 
-  // Send the response to the client
-  client.println(s);
-  delay(1);
-  Serial.println("Client disonnected");
+            // file found at server
+            if(httpCode == HTTP_CODE_OK) {
+                String payload = http.getString();
+                USE_SERIAL.println(payload);
+                if(payload=="on") digitalWrite(pin, LOW);
+                else digitalWrite(pin, HIGH);
+            }
+        } else {
+            USE_SERIAL.printf("[HTTP] GET... failed, error: %s\n", http.errorToString(httpCode).c_str());
+        }
 
-  // The client will actually be disconnected
-  // when the function returns and 'client' object is detroyed
+        http.end();
+    }
+
+    wifi_set_sleep_type(LIGHT_SLEEP_T);
+    delay(60000*5);
 }
+
