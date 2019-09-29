@@ -33,3 +33,7 @@ pip-delete-this-directory.txt
 .history
 
 # End of https://www.gitignore.io/api/python,platformio,visualstudiocode
+
+### NodeJs ###
+node_modules
+npm-debug.log*
